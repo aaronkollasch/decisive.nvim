@@ -148,10 +148,36 @@ end
 
 local function inner_cell_to()
   local ns = vim.api.nvim_create_namespace('__align_csv')
-  local prev_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')-1}, 0, {limit = 1})
-  local next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')+1}, -1, {limit = 1})
-  vim.fn.setpos('.', {0, prev_mark[1][2]+1, prev_mark[1][3]+2, 0})
-  vim.cmd("norm! v" .. (next_mark[1][3] - prev_mark[1][3] - 2) .. "lo")
+  local cur_line = vim.fn.line('.') - 1
+  local cur_col = vim.fn.col('.') - 1
+  local prev_mark = vim.api.nvim_buf_get_extmarks(
+    0,
+    ns,
+    {cur_line, cur_col-1 > 0 and cur_col-1 or 0},
+    0,
+    {limit = 1}
+  )
+  local next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {cur_line, cur_col}, -1, {limit = 1})
+  local start_pos = prev_mark[1] and {prev_mark[1][2], prev_mark[1][3]+1} or {cur_line, 0}
+  local end_pos = next_mark[1] and {next_mark[1][2], next_mark[1][3]} or {cur_line, vim.fn.col('$')-1}
+  if start_pos[1] < cur_line then -- first cell in line
+    start_pos[1] = cur_line
+    start_pos[2] = 0
+  end
+  if end_pos[1] > cur_line then -- last cell in line
+    end_pos[1] = cur_line
+    end_pos[2] = vim.fn.col('$')-1
+  end
+  if start_pos[2] == end_pos[2] then -- empty cell
+    return
+  end
+  vim.api.nvim_win_set_cursor(0, {start_pos[1]+1, start_pos[2]})
+  if vim.fn.mode():find("v") ~= nil then
+    vim.cmd.normal {'o', bang = true}
+  else
+    vim.cmd.normal {'v', bang = true}
+  end
+  vim.api.nvim_win_set_cursor(0, {end_pos[1]+1, end_pos[2]-1})
 end
 
 local function setup(opts)
