@@ -81,13 +81,13 @@ local function align_csv(opts)
       if col_idx < #line_cols_info then
         local extmark_col = col_from_start + col_length+1
         if col_display_width < col_max_lengths[col_idx] then
-          vim.api.nvim_buf_set_extmark(0, ns, line_idx-1, extmark_col, {
+          vim.api.nvim_buf_set_extmark(0, ns, line_idx-1, extmark_col-1, {
             virt_text = {{string.rep(" ", col_max_lengths[col_idx] - col_display_width), "CsvFillHl"}},
             virt_text_pos = "inline",
           })
         else
           -- no need for virtual text, the column is full. but add it anyway because of the previous/next column jumps
-          vim.api.nvim_buf_set_extmark(0, ns, line_idx-1, extmark_col, {
+          vim.api.nvim_buf_set_extmark(0, ns, line_idx-1, extmark_col-1, {
             virt_text = {{"", "CsvFillHl"}},
             virt_text_pos = "inline",
           })
@@ -119,16 +119,18 @@ local function align_csv_next_col()
       -- moving to next line. the first column is the start of the line
       vim.fn.setpos('.', {0, next_mark[1][2]+1, 1, 0})
     else
-      vim.fn.setpos('.', {0, next_mark[1][2]+1, next_mark[1][3]+1, 0})
+      vim.fn.setpos('.', {0, next_mark[1][2]+1, next_mark[1][3]+2, 0})
     end
   end
 end
 
 local function align_csv_prev_col()
   local ns = vim.api.nvim_create_namespace('__align_csv')
-  local next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')-2}, 0, {limit = 1})
+  local next_mark
   if vim.fn.col('.') == 1 then
     next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')-1}, 0, {limit = 1})
+  else
+    next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')-3}, 0, {limit = 1})
   end
   if #next_mark == 1 then
     if next_mark[1][2]+1 < vim.fn.line('.') and vim.fn.col('.') > 1 then
@@ -136,7 +138,7 @@ local function align_csv_prev_col()
       -- about the first column of the line!
       vim.fn.setpos('.', {0, vim.fn.line('.'), 1, 0})
     else
-      vim.fn.setpos('.', {0, next_mark[1][2]+1, next_mark[1][3]+1, 0})
+      vim.fn.setpos('.', {0, next_mark[1][2]+1, next_mark[1][3]+2, 0})
     end
   else
     -- go to the beginning of the line
@@ -148,7 +150,7 @@ local function inner_cell_to()
   local ns = vim.api.nvim_create_namespace('__align_csv')
   local prev_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')-1}, 0, {limit = 1})
   local next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')+1}, -1, {limit = 1})
-  vim.fn.setpos('.', {0, prev_mark[1][2]+1, prev_mark[1][3]+1, 0})
+  vim.fn.setpos('.', {0, prev_mark[1][2]+1, prev_mark[1][3]+2, 0})
   vim.cmd("norm! v" .. (next_mark[1][3] - prev_mark[1][3] - 2) .. "lo")
 end
 
