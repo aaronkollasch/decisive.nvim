@@ -55,7 +55,7 @@ local function align_csv(opts)
     end
   end
 
-  local start_align = vim.loop.hrtime()
+  local start_align = vim.uv.hrtime()
 
   align_csv_clear({keep_autocmd = true})
   local ns = vim.api.nvim_create_namespace('__align_csv')
@@ -97,7 +97,7 @@ local function align_csv(opts)
     end
   end
 
-  local elapsed = (vim.loop.hrtime() - start_align) / 1e6
+  local elapsed = (vim.uv.hrtime() - start_align) / 1e6
   if opts.print_speed and elapsed > 50 then
     print("Formatted in " .. elapsed .. "ms.")
   end
