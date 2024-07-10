@@ -183,8 +183,8 @@ end
 local function setup(opts)
   if opts.enable_text_objects ~= false then
     local cell_key = opts.cell_text_object_leader or 'c'
-    vim.cmd([[onoremap <silent> i]] .. cell_key .. [[ :<c-u>lua require('decisive').inner_cell_to()<cr>]])
-    vim.cmd([[xnoremap <silent> i]] .. cell_key .. [[ :<c-u>lua require('decisive').inner_cell_to()<cr>]])
+    vim.keymap.set('o', "i" .. cell_key, require("decisive").inner_cell_to, {noremap = true, silent = true, desc = "inner cell"})
+    vim.keymap.set('x', "i" .. cell_key, require("decisive").inner_cell_to, {noremap = true, silent = true, desc = "inner cell"})
   end
 end
 
